@@ -61,3 +61,77 @@ Pin5 needs the `face_sub` because the artwork is a z-stack — see README §4,
   error by a lot.
 
 Record the answers in README §12 before starting Phase 2.
+
+---
+
+# Phase 2 tricolour tile — print note
+
+Black symbol, white tile, wood back (README §5). Three filaments, three bodies
+per tile, one object on the plate.
+
+## Files
+
+| File | Filament | Where it sits |
+| --- | --- | --- |
+| `export/<face>-glyph.3mf` | Black | Top 0.48 mm — the symbol, inlaid flush |
+| `export/<face>-body.3mf` | White | 0.48 → 3 mm — everything else |
+| `export/<face>-back.3mf` | Wood-fill | Bottom 0.48 mm |
+
+`<face>` is `man9` or `pin5`. All six share the same origin and the same
+24 × 32 × 3 mm envelope, so they need no alignment beyond being loaded together.
+Previews: `img/man9-tricolour.png`, `img/pin5-tricolour.png` (shown exploded).
+
+## Regenerating them
+
+```sh
+cd models/mahjong
+for p in back body glyph; do
+  openscad -o export/man9-$p.3mf -D "part=\"$p\"" tile.scad
+  openscad -o export/pin5-$p.3mf -D "part=\"$p\"" \
+    -D 'face_add=["faces/pin5-black.svg","faces/pin5-navy.svg","faces/pin5-red.svg"]' \
+    -D 'face_sub=["faces/pin5-white.svg"]' \
+    tile.scad
+done
+```
+
+One file per body because OpenSCAD 2021.01 cannot write several objects into a
+single 3MF. The slicer does the assembly.
+
+## Assembling in ElegooSlicer
+
+1. Import `<face>-body.3mf`. This is the parent.
+2. Right-click it → **Add part → Load** → pick `<face>-glyph.3mf`, then again for
+   `<face>-back.3mf`. Loading them as *parts* is what matters; importing them as
+   three separate objects drops them at three different plate positions and the
+   shared origin is lost.
+3. Confirm the object's size still reads **24 × 32 × 3 mm**. If it grew, one of
+   the parts came in as a sibling object rather than a part.
+4. Assign filaments per part: body → white, glyph → black, back → wood.
+
+## Slicing
+
+Same as Phase 1 except:
+
+- **Orientation: face down.** The opposite of the Phase 1 tile. The face is then
+  ironed flat against smooth PEI, and the black glyph is inlaid rather than sat
+  on top of the white — it cannot scuff off in a game's worth of shuffling.
+- Layer height **0.16 mm** — both 0.48 mm bands are exactly three layers, so no
+  colour boundary lands mid-layer.
+- Elephant-foot compensation **0.15–0.20 mm**. This now acts on the *face*, and
+  first-layer squish shows directly as a fattened, blurred symbol edge. It is the
+  setting that decides whether this print looks good.
+- Purge tower **on**; expect ~4 changes on a plate (README §5).
+- No supports, no brim.
+
+## What to look at afterwards
+
+- Is the black symbol **flush** with the white face, or can you feel a step or a
+  ridge with a fingernail? A step means the glyph body and the body's cavity
+  disagree, which should be impossible by construction — if you feel one, say so,
+  because it means the partition broke.
+- Any **white bleeding into the black** at the boundary, or vice versa? That is a
+  flush-volume problem, not a geometry one — raise the purge for that transition.
+- Do the 0.48 mm bands read as crisp colour boundaries, or is there a smeared
+  layer where the colour changes?
+- Does the wood back look like wood at arm's length, or just brown?
+- Weigh one against the Phase 1 tile — should be within a few per cent.
