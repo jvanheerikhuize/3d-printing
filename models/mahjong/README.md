@@ -1,8 +1,10 @@
 # Mahjong Tile Set
 
-A full 144-tile mahjong set with classic symbols, printed as flat 3 mm tiles on an Elegoo Centauri Carbon with a 0.4 mm nozzle.
+A full 144-tile mahjong set with classic symbols, printed on an Elegoo Centauri Carbon 2 with a 0.4 mm nozzle and the four-colour CANVAS system.
 
 Status: **planning**. Nothing printed yet. This document is the design brief and roadmap.
+
+**Confirmed:** Centauri Carbon 2 (CANVAS available) · wall-building set, so tiles must stand on edge · final tile height deferred, generator carries it as a parameter.
 
 ---
 
@@ -14,33 +16,36 @@ This reuses the pattern already built in [`openSCAD/Stencil Generator`](../../..
 
 ---
 
-## 2. Decision to confirm before modelling
+## 2. Tile height — parked, not decided
 
-**"3 mm high" reads as tile *thickness*, which makes this a flat tile set, not a wall-building set.**
+Wall-building is the goal, and the size is deferred. That combination is fine: **height is a single parameter in the generator, and nothing else in this plan depends on it.** The artwork, the stroke-width work, the colour strategy, and the face dimensions are all settled independently — so Phases 1–3 can run to completion before the number is chosen.
 
-A standard Chinese "size 32" tile is 32 × 24 × **16 mm** — the 16 mm is what lets tiles stand on edge to build the wall. At 3 mm a tile lies flat and cannot stand, so a 3 mm set plays as mahjong *solitaire* (Shanghai), as a travel/compact set, or as tiles laid face-up on the table.
+What the choice will be, when it comes up:
 
-Three ways forward:
-
-| Option | Thickness | Plays as | Print cost (est.) |
+| Option | Height | Behaviour | Print cost (est.) |
 | --- | --- | --- | --- |
-| **A. Flat set** (as asked) | 3 mm | Solitaire, travel, face-up play | ~410 g, ~12–15 h |
-| **B. Standard set** | 16 mm | Full wall-building mahjong | ~2.2 kg, ~4–5 days |
-| **C. Half-height** | 8 mm | Stands in a wall, roughly half the print | ~1.1 kg, ~2 days |
+| **A. Flat** | 3 mm | Lies flat; solitaire/travel only — **will not stand** | ~410 g, ~12–15 h |
+| **B. Standard** | 16 mm | Full-size wall, correct heft (~18 g/tile) | ~2.2 kg, ~4–5 days |
+| **C. Half-height** | 8 mm | Stands in a wall, half the print | ~1.1 kg, ~2 days |
 
-**Recommendation:** build the generator with thickness as a parameter and print Option A first. You get a complete, playable-as-solitaire set in a couple of days, and if you later want a wall-building set it is a one-number change and a re-slice — no redesign. Everything below is written for Option A with that parameter in place.
+**The one thing already ruled out is A.** At 3 mm a tile cannot stand on edge, so it cannot form a wall — the original 3 mm figure and wall-building are mutually exclusive. Everything below is therefore written for a standing tile, with **8 mm as the working default** until you pick: it stacks and stands reliably, halves the filament and the print time against a full-size set, and stays close enough to standard that the face geometry is unchanged.
 
-**Do not scale the face down to match the thin tile.** The 32 × 24 mm face is what makes the 0.4 mm nozzle viable — see §4.
+Two consequences of a standing tile worth knowing now, neither of which blocks anything:
+
+- **Print time and filament scale almost linearly with height** — the tile is 100 % infill, so 16 mm is ~5× the 3 mm figure. This is what makes B a multi-day job.
+- **Tall tiles still print face-down.** Orientation does not change; the tile just gets taller. No supports either way.
+
+**Do not scale the face down.** The 32 × 24 mm face is what makes the 0.4 mm nozzle viable — see §4 — and it is independent of height.
 
 ---
 
 ## 3. Printer notes
 
-Small correction worth catching early: **there is no "Centauri Carbon 3."** The line is the original **Centauri Carbon** (256 × 256 × 256 mm, CoreXY, enclosed, 320 °C hardened nozzle, 110 °C bed) and the **Centauri Carbon 2 / 2 Combo**, launched January 2026, which adds the four-colour **CANVAS** system. CANVAS also shipped as a **$55 add-on for the original Centauri Carbon in April 2026**.
+**Elegoo Centauri Carbon 2**, 0.4 mm nozzle, with the four-colour **CANVAS** system. 256 × 256 × 256 mm CoreXY, fully enclosed, 320 °C hardened nozzle, 110 °C bed.
 
-Which machine you actually have decides §5, so it is worth confirming. This plan assumes the **single-colour original Centauri Carbon** — the harder case — and notes where CANVAS makes life easier.
+(For the record, since it came up: there is no "Centauri Carbon 3." The line is the original Centauri Carbon, and the Centauri Carbon 2 / 2 Combo launched January 2026 — the CC2 is what adds CANVAS. CANVAS also shipped as a $55 add-on for the original in April 2026.)
 
-The 256 mm bed and enclosure both help here: large plates of small parts, and a stable chamber that keeps a thin, wide, flat part from curling at the corners.
+This is the good case. Four colours resolves §5 outright — classic polychrome faces come off the plate finished, with no pauses, no filament swaps, and no hand-painting. The 256 mm bed takes a large plate of tiles, and the enclosure gives a stable chamber for a long multi-colour run.
 
 ---
 
@@ -60,34 +65,48 @@ So: **keep the face at 32 × 24 mm**, use a heavy CJK weight (Noto Sans CJK Bold
 
 Other geometry rules that follow from the nozzle:
 
-- Embossed relief: **0.6 mm** proud of the face (3 layers at 0.2 mm)
-- Engraved grooves: **≥ 0.6 mm** wide, 0.4–0.6 mm deep, if going the paint-fill route
+- Inlay depth: **~0.5 mm** — 3 layers at 0.16 mm, the coloured region of a face-down print
 - Gap between adjacent strokes: **≥ 0.8 mm**, or they fuse into a blob
 - Corner radius 3 mm, and a 0.4 mm × 45° chamfer on the bottom edge to absorb elephant's foot
+- Vertical edges get a light chamfer too, once the tile is tall enough to stand — it stops tiles catching on each other in the wall
 
 ---
 
-## 5. Getting colour onto the face
+## 5. Colour — solved by CANVAS
 
-This is the real design problem, and it is worth being blunt about it: **a single-extruder printer gives you one accent colour per plate.** A pause-and-swap at a given Z changes colour for *every* object on the plate at that height. Classic tiles are not one colour — dots are blue/red/green, bamboo is green with a red bird, characters are a blue numeral over a red 萬.
+On a single-extruder machine this is the hardest part of the project: a pause-and-swap changes colour for *every* object on the plate at that Z height, so you get one accent colour per plate and classic polychrome means hand-painting 144 tiles. **CANVAS removes the problem entirely.** Four colours, no pauses, correct classic colours off the plate:
 
-Four honest options:
+| Slot | Filament | Used for |
+| --- | --- | --- |
+| 1 | Ivory / bone white | Tile body and face background |
+| 2 | Red | 萬 character, 中, the 1-bamboo bird, red dots |
+| 3 | Green | 發, bamboo sticks, green dots |
+| 4 | Blue / black | Suit numerals, winds, blue dots, 白 frame |
 
-### 5a. Two-tone inlay — recommended first attempt
-Print **face-down** on smooth PEI. The first 2 layers (0.4 mm) are the accent colour and form the symbol inlaid flush into the face; swap filament and print the remaining 2.6 mm in ivory. Result: a dead-flat, glossy, two-tone face with no painting and no post-processing, one pause per plate.
+That covers every classic face. Four slots is exactly enough — which is lucky, and worth not spending: don't add a fifth accent colour to the artwork.
 
-Constraint: one accent colour per plate, so either sort tiles into red / green / blue plates, or accept a single-colour face design (the minimalist "black set" look). Cheapest, fastest, and by far the most likely to look good on the first try.
+### Build it as a face-down inlay
 
-### 5b. Engrave and paint-fill
-Engrave the design 0.5 mm deep, flood with acrylic paint or a paint pen, wipe the surface flush before it cures. Gives full classic polychrome on a single-extruder machine. Authentic result, but it is 144 tiles of handwork — budget several evenings.
+Print **face-down on smooth PEI**, with the coloured symbol occupying the **first 3 layers (~0.5 mm)** and the body printing above it. This is the same technique as the single-extruder two-tone trick, just with CANVAS doing the swaps:
 
-### 5c. CANVAS / Centauri Carbon 2
-True four-colour, no pauses, correct classic colours straight off the plate. If you already have CANVAS this is simply the answer. If not, $55 against ~15 hours of hand-painting is a reasonable trade.
+- The face comes out **dead flat and glossy** against the build plate — the closest thing to real melamine tiles you'll get off an FDM printer.
+- Colour is *inlaid*, not printed on top, so it cannot scuff off with handling. On a set that gets shuffled every game, this matters more than it sounds.
+- Colour is confined to the bottom 0.5 mm, which bounds purge waste — see below.
+- No supports, no painting, no post-processing.
 
-### 5d. Sorted-plate hybrid
-Group tiles by dominant accent (all-red plate, all-green plate, blue/black plate) and use 5a per plate, hand-touching only the handful of genuinely two-colour faces (1-bamboo bird, the flowers). Good middle path if CANVAS is not on the table.
+### The one real cost: purge waste
 
-**Suggested sequence:** print one test tile each of 5a and 5b, look at them side by side, then commit. Do not commit 144 tiles to a colour strategy you have not held in your hand.
+Every colour change on a single-nozzle multi-material system flushes the old filament out. Rough order of magnitude: **~0.5–1 g per change**, and the arithmetic is what decides whether this is trivial or ruinous.
+
+The saving grace is that the slicer groups by colour **across the whole plate**, not per tile. On a given layer it prints every red region on every tile, then swaps once, then every green region, and so on. So the cost is roughly:
+
+> (colours on the layer − 1) × (number of face layers) × (grams per change)
+
+At 4 colours over 3 face layers that's ~9 changes per plate, call it **~5–10 g per plate** — negligible against a ~1 kg set. Above the face, the tile is single-colour ivory and there are no changes at all.
+
+**The rule that keeps it that way: confine colour to the face layers.** If the design puts colour anywhere in the body, or the slicer decides to alternate colours up the stack, the change count multiplies by the layer count and the purge tower can outweigh the tiles. Verify this on the Phase 4 test plate by reading the slicer's flush estimate before committing to a full run — it reports it directly.
+
+Set the purge/flush volumes properly for the light-to-dark transitions (ivory→red is cheap, red→ivory is expensive; the slicer's matrix handles this if you let it). Keep the purge tower on — with this few changes it costs almost nothing and prevents colour bleed into the faces.
 
 ---
 
@@ -115,16 +134,22 @@ Group tiles by dominant accent (all-red plate, all-green plate, blue/black plate
 ```mermaid
 flowchart LR
     A["CC0 tile SVGs<br/>(FluffyStuff)"] --> B["Strip tile border,<br/>keep face symbol only"]
-    B --> C["Flatten to single<br/>filled path, close gaps"]
-    C --> D["Widen strokes<br/>to at least 0.85 mm"]
-    D --> E["44 face SVGs<br/>faces/*.svg"]
-    E --> F["tile.scad<br/>parametric generator"]
-    F --> G["144 STLs"]
-    G --> H["ElegooSlicer<br/>plates + colour swap"]
-    H --> I["Printed set"]
+    B --> C["Split by colour<br/>red / green / blue"]
+    C --> D["Flatten each to a<br/>filled path, close gaps"]
+    D --> E["Widen strokes<br/>to at least 0.85 mm"]
+    E --> F["44 faces x per-colour SVGs<br/>faces/&lt;tile&gt;-&lt;colour&gt;.svg"]
+    F --> G["tile.scad<br/>parametric generator"]
+    G --> H["144 multi-part 3MFs<br/>one body per colour"]
+    H --> I["ElegooSlicer<br/>assign CANVAS slots"]
+    I --> J["Printed set"]
 ```
 
-The stroke-widening step in `D` is the one that needs care — it is a per-glyph check against the 0.85 mm floor, not a blanket offset, or the dots suit will bloat.
+Two steps carry the risk:
+
+- **`C` — colour separation.** CANVAS means each face is no longer one path but one path *per colour*, all sharing the same face plane. They must tile the face exactly: any gap shows as an ivory hairline, any overlap is a geometry conflict the slicer resolves unpredictably. Build the accent shapes to butt exactly, and let the ivory background be everything not covered.
+- **`E` — stroke widening.** A per-glyph check against the 0.85 mm floor, not a blanket offset, or the dots suit bloats. Note this now applies *per colour region*: a 0.6 mm red stroke sitting inside a green shape is just as unprintable as one on bare ivory.
+
+Export as **multi-part 3MF rather than STL** — one part per colour, all in a common origin. STL cannot carry the part separation, and re-aligning four meshes per tile by hand 144 times is not a plan.
 
 ---
 
@@ -134,30 +159,36 @@ Starting point, to be corrected by the test plate:
 
 | Setting | Value | Why |
 | --- | --- | --- |
-| Layer height | 0.16 mm | Finer steps on the inlay; 3 mm = 19 layers |
+| Layer height | 0.16 mm | Finer steps on the inlay; the face is 3 layers |
 | First layer | 0.20 mm | Adhesion for a large flat footprint |
 | Line width | 0.42 mm | Default for 0.4 nozzle |
 | Walls | 3 | Crisp tile edges |
-| Top/bottom layers | 5 / 5 | At 3 mm the tile is nearly solid regardless |
-| Infill | 100 % | Weight and a solid "clack" |
+| Top/bottom layers | 5 / 5 | Solid face and back |
+| Infill | 100 % | Weight and a solid "clack"; drop to ~40 % if a 16 mm set proves too slow |
 | Material | PLA or PLA+ | Stiff, dimensionally stable, cheap at 144 parts |
 | Bed / plate | Smooth PEI, face-down | Glossy face, closest to real melamine tiles |
 | Elephant-foot comp. | 0.15–0.20 mm | Keeps the inlaid face edge sharp |
-| Brim | Off, unless corners lift | Thin wide parts are the classic curl case |
-| Colour change | Pause at Z = 0.36 mm | End of layer 2, for the 5a inlay |
+| Brim | Off | Only needed for the 3 mm case, which is now ruled out |
+| Colour | CANVAS, 4 slots | §5 — colour confined to the bottom 3 layers |
+| Purge tower | On | Cheap at ~9 changes/plate; prevents bleed into faces |
+| Flush volumes | Slicer defaults, then tune | Dark→ivory is the expensive transition |
 
 Chamber: leave the door ajar for PLA — the enclosure is an asset for ABS but PLA will heat-creep in a sealed hot chamber.
+
+Note the infill line. At 3 mm, 100 % infill was free. On a standing tile it is most of the print time, and it is the first lever to pull if a full-size set turns out to be a four-day job. A ~40 % gyroid tile still feels solid and prints far faster — but it changes the sound and heft, so decide it on a test tile rather than in the slicer at 2 a.m.
 
 ---
 
 ## 9. Budget (estimates, not measured)
 
-- **Per tile:** 32 × 24 × 3 mm ≈ 2.3 cm³ ≈ **2.9 g** solid PLA
-- **Set:** ~410 g body filament + a small amount of accent; call it one spool with room to spare
-- **Plate capacity:** ~48–63 tiles at 2–4 mm spacing → **3 plates**
-- **Time:** roughly 4–5 h per plate, **~12–15 h total**
+Based on the **8 mm working default** from §2. Everything here scales roughly linearly with height, so a 16 mm set is about double.
 
-Reality check on feel: a real size-32 tile is ~18 g. A 3 mm flat tile is ~2.9 g. **These will feel notably light** — that is inherent to Option A, not a settings problem. If heft matters, that is an argument for Option C (8 mm) or for a rear cavity holding a steel washer.
+- **Per tile:** 32 × 24 × 8 mm ≈ 6.1 cm³ ≈ **7.7 g** solid PLA
+- **Set:** ~1.1 kg body filament, plus ~5–10 g per plate in purge → **two spools**, mostly ivory
+- **Plate capacity:** ~48–63 tiles at 2–4 mm spacing → **3 plates**
+- **Time:** roughly 14–18 h per plate, **~2 days total** running unattended
+
+Reality check on feel: a real size-32 tile is ~18 g. At 8 mm solid these come out around 7.7 g — lighter than a real tile but with enough mass and edge to stack and to knock over convincingly. If they feel wrong in the hand at Phase 4, the fix is height, not a washer cavity: go to 12 mm and re-slice. That is the whole reason height stays a parameter.
 
 ---
 
@@ -165,28 +196,28 @@ Reality check on feel: a real size-32 tile is ~18 g. A 3 mm flat tile is ~2.9 g.
 
 ```mermaid
 flowchart TD
-    P0["Phase 0 — Decide<br/>Confirm 3 mm = thickness<br/>Confirm which printer<br/>Pick colour strategy"] --> P1
     P1["Phase 1 — Single test tile<br/>5-dot + 9-characters<br/>Validate stroke width"] --> P2
-    P2["Phase 2 — Artwork pipeline<br/>44 face SVGs, stroke audit"] --> P3
-    P3["Phase 3 — tile.scad<br/>Parametric generator + STLs"] --> P4
-    P4["Phase 4 — Test plate<br/>~12 tiles, tune colour swap"] --> P5
+    P2["Phase 2 — Artwork pipeline<br/>44 faces, split per colour"] --> P3
+    P3["Phase 3 — tile.scad<br/>Parametric generator + 3MFs"] --> P4
+    P4["Phase 4 — Test plate<br/>~12 tiles, check purge + height"] --> PH
+    PH{"Height decision<br/>8 / 12 / 16 mm"} --> P5
     P5["Phase 5 — Full run<br/>3 plates, 144 tiles"] --> P6
     P6["Phase 6 — Storage<br/>Box, racks, tile backs"]
 ```
 
-**Phase 0 — Decide.** Three answers unblock everything: is 3 mm the thickness, which Centauri Carbon is it, and which colour route from §5.
+Phase 0 is gone — the printer, the colour route, and the wall-building requirement are all settled. The only decision left is height, and it now sits **after** Phase 4, where a tile in the hand can answer it.
 
-**Phase 1 — One test tile.** Print **9-characters** (the densest glyph) and **5-dots** at full 32 × 24 mm. This is the entire technical risk of the project in a 20-minute print. If 九萬 comes out legible, nothing else here is hard.
+**Phase 1 — One test tile.** Print **9-characters** (the densest glyph) and **5-dots** at full 32 × 24 mm, single colour, at whatever height is convenient. This is the entire technical risk of the project in a 20-minute print. If 九萬 comes out legible, nothing else here is hard.
 
-**Phase 2 — Artwork.** Extract 44 faces from the CC0 set, strip borders, flatten to filled paths, audit every glyph against the 0.85 mm floor. The slowest phase and the one that decides how good the set looks.
+**Phase 2 — Artwork.** Extract 44 faces from the CC0 set, strip borders, flatten to filled paths, **split each face into per-colour SVGs**, and audit every region against the 0.85 mm floor. The slowest phase and the one that decides how good the set looks. The colour split is new work that the single-colour plan did not have.
 
-**Phase 3 — Generator.** `tile.scad` with parameters for size, thickness, corner radius, chamfer, relief depth, and face style (emboss / engrave / inlay). Batch-export 144 STLs.
+**Phase 3 — Generator.** `tile.scad` with parameters for size, **height**, corner radius, chamfer, inlay depth, and face style. Batch-export 144 **multi-part 3MFs**, one body per colour.
 
-**Phase 4 — Test plate.** ~12 tiles covering every suit. Tune the colour-swap Z, elephant-foot compensation, and spacing. Confirm no corner lift across a full-width plate.
+**Phase 4 — Test plate.** ~12 tiles covering every suit and every colour. Check the slicer's flush estimate against the §5 budget, tune elephant-foot compensation and spacing, confirm no corner lift, and — the point of this phase — **hold a finished tile and decide the height**.
 
-**Phase 5 — Full run.** Three plates. Sort by accent colour if going the 5d route.
+**Phase 5 — Full run.** Three plates at the chosen height. Nothing to sort by colour; CANVAS handles it.
 
-**Phase 6 — Storage.** A box and racks, once tile dimensions are final and measured rather than nominal.
+**Phase 6 — Storage.** A box and racks, once tile dimensions are final and measured rather than nominal. Size the racks off measured tiles — the height parameter means nominal is not trustworthy until Phase 5 is done.
 
 ---
 
@@ -195,18 +226,17 @@ flowchart TD
 | Risk | Likelihood | Mitigation |
 | --- | --- | --- |
 | 萬 strokes merge at 0.4 mm | Medium | Phase 1 test tile settles it before any bulk work |
-| Thin flat tiles curl at corners | Medium | Enclosure, smooth PEI, brim if needed, chamfered bottom |
-| One accent colour per plate | Certain | §5 — pick a strategy deliberately, do not discover it mid-run |
-| Tiles feel too light | Certain at 3 mm | Accept, or thicken, or add washer cavity |
-| Colour-swap pause fails mid-plate | Low | Test on the Phase 4 plate, not the 63-tile plate |
+| Ivory hairlines at colour boundaries | Medium | Phase 2 — coloured regions must butt exactly, not merely abut visually |
+| Purge waste blows past the §5 estimate | Medium | Colour must stay in the face layers; check the flush estimate on the Phase 4 plate |
+| Full-height run is slower than expected | Medium | ~2 days at 8 mm, ~4 at 16 mm; drop infill to 40 % before dropping height |
+| Colour bleeds between slots | Low | Purge tower on, tune flush volumes for dark→ivory |
+| Tiles topple / walls won't stand | Low | Chamfer vertical edges; settled by holding a Phase 4 tile |
 
 ## 12. Open questions
 
-1. Is 3 mm the thickness, or did you mean the symbol relief height?
-2. Centauri Carbon, Centauri Carbon 2, or original + CANVAS?
-3. Solitaire/travel set, or do you want to build walls (→ Option B or C)?
-4. Classic polychrome, or is a clean two-tone set acceptable?
-5. Chinese, Hong Kong, or Riichi face conventions? (Affects flowers and the 白 dragon — blank vs framed.)
+1. Chinese, Hong Kong, or Riichi face conventions? (Affects flowers and the 白 dragon — blank vs framed.)
+
+That is the only one left. Printer, colour route, and wall-building are settled; height is deferred by design and gets answered at Phase 4.
 
 ---
 
