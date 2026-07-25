@@ -242,7 +242,17 @@ products — assembled, it paints the whole tile in whichever part it happened t
 pick, which is a picture of a renderer artefact rather than of the tile. The
 per-part CGAL exports are unaffected; only the interactive preview is.
 
-Export as **multi-part 3MF rather than STL** — one part per colour, all in a common origin. STL cannot carry the part separation, and re-aligning three meshes per tile by hand 144 times is not a plan. OpenSCAD 2021.01 cannot write several objects into one 3MF either, so the workflow is one file per body and a single "load as parts of one object" step in the slicer; see [PRINT.md](PRINT.md).
+Export as **multi-part 3MF rather than STL** — one part per colour, all in a common origin. STL cannot carry the part separation, and re-aligning three meshes per tile by hand 144 times is not a plan.
+
+OpenSCAD 2021.01 cannot write several objects into one 3MF, and drops `color()`
+on export, so each body comes out as its own grey file. `tools/merge_3mf.py`
+packs them back together offline: it writes one `<basematerials>` entry per body
+and wraps the parts in a **component** object, so the slicer opens
+`export/<face>-test.3mf` as a single object with three named, coloured parts
+instead of three grey lumps to be aligned by hand. Components rather than three
+top-level build items, because siblings desynchronise the first time anyone
+drags one and the shared origin is what makes this work at all. See
+[PRINT.md](PRINT.md) for the commands and the slicer steps.
 
 ---
 
