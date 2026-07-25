@@ -1,0 +1,32 @@
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Slicer output — regenerate from source geometry + profile
+*.gcode
+*.gco
+*.bgcode
+*.ctb
+
+# Exported meshes — commit release exports deliberately with `git add -f`
+*.stl
+*.obj
+*.off
+*.3mf
+*.amf
+
+# CAD scratch/backup files
+*.csg
+*.f3d.bak
+*.blend1
+*.blend2
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/worktrees/
