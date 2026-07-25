@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300mm" height="400mm" viewBox="0 0 300 400" id="svg2" version="1.1">
+  <g transform="translate(5.0263,6.5000) scale(0.968105)"><g id="g7942" transform="translate(4.6993944e-7,-651.68468)">
+    <g id="g7728" transform="matrix(1.0227353,0,0,1.0227353,288.32505,245.01862)">
+      </g>
+    <g transform="matrix(1.0227353,0,0,1.0227353,432.4431,245.01862)" id="g7784">
+      </g>
+    <g transform="matrix(1.0227353,0,0,1.0227353,288.32505,464.94965)" id="g7798">
+      </g>
+    <g id="g7812" transform="matrix(1.0227353,0,0,1.0227353,432.4431,464.94965)">
+      </g>
+    <g transform="matrix(1.0227353,0,0,1.0227353,360.63962,355.83523)" id="g7826">
+      <path id="circle7832" style="opacity:1;fill:#b93c3c;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="m -167.16516,485.48892 a 38.810516,38.810516 0 0 1 -38.81052,38.81052 38.810516,38.810516 0 0 1 -38.81051,-38.81052 38.810516,38.810516 0 0 1 38.81051,-38.81051 38.810516,38.810516 0 0 1 38.81052,38.81051 z" />
+      <path id="circle7838" style="opacity:1;fill:#b93c3c;stroke-width:8;stroke-linecap:round;stroke-linejoin:round" d="m -202.38958,485.48892 a 3.5860937,3.5860937 0 0 1 -3.5861,3.5861 3.5860937,3.5860937 0 0 1 -3.58609,-3.5861 3.5860937,3.5860937 0 0 1 3.58609,-3.58609 3.5860937,3.5860937 0 0 1 3.5861,3.58609 z" />
+    </g>
+  </g>
+</g></svg>
