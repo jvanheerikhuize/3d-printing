@@ -72,6 +72,41 @@ Other geometry rules that follow from the nozzle:
 - Corner radius 3 mm, and a 0.4 mm × 45° chamfer on the bottom edge to absorb elephant's foot
 - A light chamfer on the top face edge too — on a 3 mm tile there is almost nothing to grip, and a chamfered edge is what lets a fingernail lift one tile off a stack
 
+### What measurement says (supersedes the table above)
+
+The table is an estimate for *drawn type*. `tools/check_strokes.py` measures the
+real vendored artwork along its medial axis, and the estimate is optimistic. At a
+24 mm face, against this section's own floors:
+
+| Face | Stroke (p1) | Gap (p1) | Verdict |
+| --- | --- | --- | --- |
+| `man9` | 0.60 mm | 0.35 mm | ❌ both — 36% of the gap axis under 0.8 mm |
+| `pin5` | 0.55 mm | 0.34 mm | ❌ both — 91% of the gap axis under 0.8 mm |
+
+The verdict is the 1st percentile, not the minimum: where two shapes are drawn
+tangent the true width is zero by construction, so the minimum measures the
+rasteriser. See the script's docstring.
+
+Scaling the tile does not fix this. `man9`'s strokes clear at a 36 mm face and
+its gaps still fail at 40 mm; `pin5`'s gaps only clear around 60 mm. **The lever
+is the artwork, not the tile size.**
+
+### Dots as relief
+
+`Pin5` is the sharp case. Upstream it is a z-stack — thick black outer disc,
+white ring, navy disc, white spokes, centre dot — and unioning those colour
+layers gives a plain circle, because everything that makes it a 5-dot lives in
+the boundaries *between* the layers. SVG cannot express that subtraction, so
+`tile.scad` takes `face_add` minus `face_sub`: the dark layers with the white cut
+back out. That renders each dot as an annulus, which is legible and the most
+printable reading of the design.
+
+The four-ring concentric original is not recoverable as single-colour relief at
+any playable tile size. Phase 2's flat colour inlay is a different problem, and
+plausibly an easier one — a colour boundary needs one bead, not a non-fusing
+wall, so the effective floor there is arguably ~0.45 mm rather than 0.8 mm. That
+is reasoning, not a measured result; treat it as a Phase 2 question.
+
 ---
 
 ## 5. Colour — solved by CANVAS
