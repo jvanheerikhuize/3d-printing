@@ -30,3 +30,6 @@ Thumbs.db
 
 # Claude
 .claude/worktrees/
+
+# Extracted OpenSCAD AppImage and diagnostic renders
+.scratch/

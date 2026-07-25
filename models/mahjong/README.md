@@ -111,20 +111,30 @@ is reasoning, not a measured result; treat it as a Phase 2 question.
 
 ## 5. Colour — solved by CANVAS
 
-On a single-extruder machine this is the hardest part of the project: a pause-and-swap changes colour for *every* object on the plate at that Z height, so you get one accent colour per plate and classic polychrome means hand-painting 144 tiles. **CANVAS removes the problem entirely.** Four colours, no pauses, correct classic colours off the plate:
+On a single-extruder machine this is the hardest part of the project: a pause-and-swap changes colour for *every* object on the plate at that Z height, so you get one accent colour per plate and classic polychrome means hand-painting 144 tiles. **CANVAS removes the problem entirely.** Colour changes happen mid-print, unattended, with the swaps costing purge rather than attention.
 
-| Slot | Filament | Used for |
-| --- | --- | --- |
-| 1 | Ivory / bone white | Tile body and face background |
-| 2 | Red | 萬 character, 中, the 1-bamboo bird, red dots |
-| 3 | Green | 發, bamboo sticks, green dots |
-| 4 | Blue / black | Suit numerals, winds, blue dots, 白 frame |
+### Three colours, chosen
 
-That covers every classic face. Four slots is exactly enough — which is lucky, and worth not spending: don't add a fifth accent colour to the artwork.
+The set is built in **three filaments**, decided 2026-07-25:
+
+| Slot | Filament | Region | Band |
+| --- | --- | --- | --- |
+| 1 | White | Tile body and face background | z 0.48 → 3 mm |
+| 2 | Black | Every face symbol | top 0.48 mm, inlaid flush |
+| 3 | Wood-fill | Back surface | bottom 0.48 mm |
+
+`tile.scad` emits these as `part="body"`, `"glyph"` and `"back"` — see §7.
+
+Two consequences worth stating plainly rather than discovering on plate three:
+
+- **The faces are monochrome.** Classically 萬 is red, 發 green, 中 red; here they are all black. The artwork keeps its colour separation upstream (`faces/pin5-navy.svg` and friends still exist), so restoring an accent is a matter of routing one more layer to slot 4 — CANVAS has the slot free. But as designed, `Pin5`'s navy disc and red centre both land in the black body, and the dot reads as a plain annulus. The pin5 preview shows exactly this.
+- **Wood-fill is abrasive.** It carries real wood flour, and 144 tiles is enough extrusion to matter on a brass nozzle. Either fit a hardened nozzle for the run, or use a plain tan/brown PLA and accept that "wood" is a colour rather than a texture. The back never touches the face, so nothing about the model depends on which you pick.
+
+Three colours also *reduce* the purge bill against the old four-slot plan — see below.
 
 ### Build it as a face-down inlay
 
-Print **face-down on smooth PEI**, with the coloured symbol occupying the **first 3 layers (~0.5 mm)** and the body printing above it. This is the same technique as the single-extruder two-tone trick, just with CANVAS doing the swaps:
+Print **face-down on smooth PEI**, with the black symbol occupying the **first 3 layers (0.48 mm)**, the white body above it, and the wood back as the **last 3 layers**. This is the same technique as the single-extruder two-tone trick, just with CANVAS doing the swaps:
 
 - The face comes out **dead flat and glossy** against the build plate — the closest thing to real melamine tiles you'll get off an FDM printer.
 - Colour is *inlaid*, not printed on top, so it cannot scuff off with handling. On a set that gets shuffled every game, this matters more than it sounds.
@@ -139,9 +149,19 @@ The saving grace is that the slicer groups by colour **across the whole plate**,
 
 > (colours on the layer − 1) × (number of face layers) × (grams per change)
 
-At 4 colours over 3 face layers that's ~9 changes per plate, call it **~5–10 g per plate**, so ~15–30 g across the three plates. Against a ~410 g set that is a few per cent — worth measuring, not worth worrying about. Above the face, the tile is single-colour ivory and there are no changes at all.
+The three-colour split is cheap by this arithmetic, because each colour occupies a contiguous band rather than alternating. Face-down, a plate runs:
+
+| Layers | Colours present | Changes |
+| --- | --- | --- |
+| 1–3 (face) | black glyph + white background | 3 |
+| 4–16 (body) | white only | 0 |
+| 17–19 (back) | wood only | 1 |
+
+**~4 changes per plate**, so roughly **2–4 g**, under 10 g across all three plates — against a ~410 g set, noise. The old four-slot plan cost ~9 changes; dropping to three colours more than halves it.
 
 Note this is one place where the flat tile is *less* forgiving: purge is a fixed cost per plate, so on a 410 g set it is a larger share than it would be on a 2 kg one. It is still small; it just means don't be careless with flush volumes.
+
+The white→wood change at layer 17 is the expensive direction only in reverse; going *to* the darker filament is the cheap transition, which is a small piece of luck worth not undoing by reordering the stack.
 
 **The rule that keeps it that way: confine colour to the face layers.** If the design puts colour anywhere in the body, or the slicer decides to alternate colours up the stack, the change count multiplies by the layer count and the purge tower can outweigh the tiles. Verify this on the Phase 4 test plate by reading the slicer's flush estimate before committing to a full run — it reports it directly.
 
@@ -190,7 +210,39 @@ Two steps carry the risk:
 - **`C` — colour separation.** CANVAS means each face is no longer one path but one path *per colour*, all sharing the same face plane. They must tile the face exactly: any gap shows as an ivory hairline, any overlap is a geometry conflict the slicer resolves unpredictably. Build the accent shapes to butt exactly, and let the ivory background be everything not covered.
 - **`E` — stroke widening.** A per-glyph check against the 0.85 mm floor, not a blanket offset, or the dots suit bloats. Note this now applies *per colour region*: a 0.6 mm red stroke sitting inside a green shape is just as unprintable as one on bare ivory.
 
-Export as **multi-part 3MF rather than STL** — one part per colour, all in a common origin. STL cannot carry the part separation, and re-aligning four meshes per tile by hand 144 times is not a plan.
+### The three bodies
+
+`tile.scad`'s `part` parameter selects what it emits: `solid` (the Phase 1
+single-colour tile), or one of `back` / `body` / `glyph`. All three colour bodies
+are carved out of the *same* `tile_body()` by intersecting it with z-slabs, so
+they share one origin and mate exactly, and the white body has the glyph volume
+subtracted from it by the same expression that defines the glyph — the two
+cannot drift apart when the artwork or the inlay depth changes.
+
+They **partition** the tile: `back + body + glyph == tile_body()`, no overlap and
+nothing left over. That is the property to preserve in any edit. Overlapping
+parts make the slicer pick a winner per region, silently; gaps between parts
+become voids inside a tile nobody will cut open to diagnose.
+
+Verified by exporting each part and measuring its bounding box — `man9`:
+
+| Part | z range | Footprint |
+| --- | --- | --- |
+| `back` | 0 → 0.48 | full 24 × 32 |
+| `body` | 0.48 → 3 | full 24 × 32 |
+| `glyph` | 2.52 → 3 | 16.57 × 27.50 |
+
+Contiguous, non-overlapping, one origin. `pin5` measures the same but for a
+20.63 × 26.50 glyph.
+
+`part="all"` renders the three exploded and coloured, for eyeballing only. It is
+exploded rather than assembled deliberately: the parts share surfaces exactly,
+and OpenCSG's preview cannot resolve coincident faces between separate CSG
+products — assembled, it paints the whole tile in whichever part it happened to
+pick, which is a picture of a renderer artefact rather than of the tile. The
+per-part CGAL exports are unaffected; only the interactive preview is.
+
+Export as **multi-part 3MF rather than STL** — one part per colour, all in a common origin. STL cannot carry the part separation, and re-aligning three meshes per tile by hand 144 times is not a plan. OpenSCAD 2021.01 cannot write several objects into one 3MF either, so the workflow is one file per body and a single "load as parts of one object" step in the slicer; see [PRINT.md](PRINT.md).
 
 ---
 
@@ -210,8 +262,8 @@ Starting point, to be corrected by the test plate:
 | Bed / plate | Smooth PEI, face-down | Glossy face, closest to real melamine tiles |
 | Elephant-foot comp. | 0.15–0.20 mm | Keeps the inlaid face edge sharp |
 | Brim | Off, unless corners lift | Thin wide parts are the classic curl case |
-| Colour | CANVAS, 4 slots | §5 — colour confined to the bottom 3 layers |
-| Purge tower | On | Cheap at ~9 changes/plate; prevents bleed into faces |
+| Colour | CANVAS, 3 slots | §5 — black face layers, white body, wood back |
+| Purge tower | On | Cheap at ~4 changes/plate; prevents bleed into faces |
 | Flush volumes | Slicer defaults, then tune | Dark→ivory is the expensive transition |
 
 Chamber: leave the door ajar for PLA — the enclosure is an asset for ABS but PLA will heat-creep in a sealed hot chamber.
